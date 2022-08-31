@@ -12,3 +12,15 @@ print(str(x))
 x = 15
 print(x)
 
+specialvariable = "super special string was this not long enough?"
+
+print(specialvariable[1], specialvariable[1] + str(1))
+
+stringstore = ''
+x = 10
+while x > 0:
+    stringstore += specialvariable[x]
+    x -= 1
+    print(stringstore)
+
+print(stringstore[1:6])
