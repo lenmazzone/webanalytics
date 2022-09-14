@@ -2,13 +2,15 @@ x = -10
 
 if x > 0:
     if x > 10:
-        print("x > 10", x)
+        output = "x > 10"
     else:
-        print("0<x<=10", x)
+        output = "0<x<=10"
 elif x < 0:
     if x > -10:
-        print("-10<x<0", x)
+        output = "-10<x<0"
     else:
-        print("x<=-10", x)
+        output = "x<=-10"
 else:
-    print("x==0", x)
+    output = "x==0"
+
+print(output)
