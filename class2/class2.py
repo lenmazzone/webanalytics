@@ -67,8 +67,26 @@ print(my_dict)
 if True:
     print("true")
 
-
 print(15 > -3)
 
 print('a string' == 'another strinf', 'a' == 'a')
 
+print(10 > 5 and 15 > 5)
+
+x = [1, 2, 3]
+y = [1, 2, 3]
+
+z = x
+print(x is y, x is z)
+
+x = 1
+if x > 0:
+    print("x is positive")
+elif x == 0:
+    print("x is 0")
+else:
+    print("EOF")
+
+print("outside the conditional")
+
+# This is a comment
