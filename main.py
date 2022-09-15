@@ -6,7 +6,6 @@ thisString = "I am a string stored in a variable"
 
 print(thisString)
 
-
 def thisfunction(count):
     for char in thisString:
         print(char)
