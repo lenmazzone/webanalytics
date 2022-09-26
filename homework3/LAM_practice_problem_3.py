@@ -79,4 +79,6 @@ print(shopping_list)
 # Question 7
 with open("shakespeare.txt", mode="r", encoding="utf-8") as f:
     library = f.read().splitlines()
+# my line count seems to be 1 off from the one suggested in the problem -- but the below includes the first line of
+# the sonnet, slicing from 303 does not
 print(*library[302:316], sep="\n")
