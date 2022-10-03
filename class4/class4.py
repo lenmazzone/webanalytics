@@ -1,3 +1,4 @@
+import re
 import time
 
 import requests as requests
@@ -28,3 +29,17 @@ print(response.headers)
 
 text = response.text
 print(text)
+
+papers = re.findall('papers/.+>(.+)<', text)
+print(papers)
+
+classes = re.findall('<li>.20.+---.(.+),', text)
+
+print(classes)
+unique_classes = list()
+for item in classes:
+    if item not in unique_classes:
+        unique_classes.append(item)
+
+print(unique_classes)
+
