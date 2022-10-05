@@ -80,13 +80,17 @@ print("\n")
 for article in data:
     print(article)
 
+print("Writing to file")
 with open('white-house.txt', mode ='w', encoding="utf-8") as f:
     for article in data:
         for item in article:
             f.write(item + "\t")
         f.write("\n")
+print("done writing")
 
-with open('white-house.txt', mode ='r', encoding="utf-8" as f:
+with open('white-house.txt', mode ='r', encoding="utf-8") as f:
     read_articles = f.read().split("\n")
+
+print("Printing readout of files")
 for article in read_articles:
     print(article)
