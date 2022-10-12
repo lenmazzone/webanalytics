@@ -20,7 +20,6 @@ time.sleep(4)
 
 
 def click_read_more():
-
     read_more_exists = check_exists_by_xpath("//span[@class='biGQs _P XWJSj Wb']")
     print(f"{read_more_exists} = read_more_exists")
     if read_more_exists:
@@ -38,9 +37,12 @@ def check_exists_by_xpath(xpath):
     return True
 
 
-browser.find_element(By.CSS_SELECTOR, "#tab-data-qa-reviews-0 > div > div.LXdgT > span > div > div.JEtPQ > div > div > span:nth-child(1) > span > button").click()
-browser.find_element(By.CSS_SELECTOR,'body > div.HyAcm.D.t._U.s.l.Za.f > div > div.YmElR._T > div > span:nth-child(4) > span > button:nth-child(2)').click()
-browser.find_element(By.CSS_SELECTOR,'body > div.HyAcm.D.t._U.s.l.Za.f > div > div.HllFM.F- > div > div.HyFLq.ceyRp > button').click()
+browser.find_element(By.CSS_SELECTOR,
+                     "#tab-data-qa-reviews-0 > div > div.LXdgT > span > div > div.JEtPQ > div > div > span:nth-child(1) > span > button").click()
+browser.find_element(By.CSS_SELECTOR,
+                     'body > div.HyAcm.D.t._U.s.l.Za.f > div > div.YmElR._T > div > span:nth-child(4) > span > button:nth-child(2)').click()
+browser.find_element(By.CSS_SELECTOR,
+                     'body > div.HyAcm.D.t._U.s.l.Za.f > div > div.HllFM.F- > div > div.HyFLq.ceyRp > button').click()
 
 # customize how many page reviews you want to scrape
 page_num = 5
@@ -52,6 +54,12 @@ dates = []
 
 for i in range(0, page_num):
 
+    # Make sure all the reviews are exposed
+    if check_exists_by_xpath('//button[@class="rmyCe _G B- z _S c Wc wSSLS roAGK w pexOo QHaGY"]'):
+        browser.find_element(By.CSS_SELECTOR, '#tab-data-qa-reviews-0 > div > div.LbPSX > button').click()
+        print("see more button clicked")
+        time.sleep(1)
+
     # expand the reviews
     click_read_more()
 
@@ -59,37 +67,50 @@ for i in range(0, page_num):
     page_source = browser.page_source
     soup = BeautifulSoup(page_source, 'lxml')
     reviews_content = soup.find_all('div', class_='_c')
-    #print(reviews_content)
+    # print(reviews_content)
 
     # extract the author, review_text and rating
     for review in reviews_content:
-
         author = review.find('span', class_='biGQs _P fiohW fOtGX').a.text
         review_text = review.find('div', class_='biGQs _P pZUbB KxBGd').span.text
         rating = review.find('svg', class_='UctUV d H0').get('aria-label')
-        date = review.find('div',class_='biGQs _P pZUbB ncFvv osNWb').text
+        date = review.find('div', class_='biGQs _P pZUbB ncFvv osNWb').text
 
-        print(author,"\n",rating,"\n",review_text, "\n",date)
+        # print(author,"\n",rating,"\n",review_text, "\n",date)
         # append to our accumulative lists
         reviews.append(review_text)
-        ratings.append(rating)
+        ratings.append(rating.strip(' bubbles'))
         authors.append(author)
-        dates.append(date)
+        dates.append(date.strip('Written'))
 
     # use selenium to go to the next page
-    if check_exists_by_xpath('//button[@class="rmyCe _G B- z _S c Wc wSSLS roAGK w pexOo QHaGY"]'):
-        browser.find_element(By.XPATH, '//a[@class="rmyCe _G B- z _S c Wc wSSLS roAGK w pexOo QHaGY"]').click()
+    if check_exists_by_xpath('//*[@id="tab-data-qa-reviews-0"]/div/div[5]/div[11]/div[1]/div/div[1]/div[2]/div/a'):
+        browser.find_element(By.CSS_SELECTOR,
+                             '#tab-data-qa-reviews-0 > div > div.LbPSX > div:nth-child(11) > div:nth-child(2) > div > div.OvVFl.j > div.xkSty > div > a').click()
+        print("going to a new page")
         time.sleep(1)
+    else:
+        break
 
-print(authors)
+# print(authors)
 browser.quit()
 
 data = {
-    'reviews':reviews,
+    'reviews': reviews,
     'ratings': ratings,
-    'authors':authors,
-    'dates':dates
+    'authors': authors,
+    'dates': dates
 }
 
-df = pd.DataFrame(data)
-print(df.shape,"\n", df.head())
+df = pd.DataFrame(data, columns=['reviews', 'ratings', 'authors', 'dates'])
+# print(df.shape,"\n", df.head())
+
+df.sort_values(by=['ratings', 'dates'], inplace=True, ascending=False)
+
+with pd.option_context('display.max_rows', None,
+                       'display.max_columns', None,
+                       'display.precision', 3,
+                       ):
+    print(df)
+
+# At least from a casual analysis, I don't see a strong relationship between review amounts and dates
