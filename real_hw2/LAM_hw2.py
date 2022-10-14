@@ -47,10 +47,11 @@ for i in range(pageNum):
         critic = review.find('a', {"data-qa": "review-critic-link"}).text or "NA"
         rating = review.find("div", class_='review_icon')['class'].pop() or "NA"
         source = review.find('em', {"data-qa": "review-critic-publication"}).text or "NA"
-        content = review.find('div', {"data-qa": "review-text"}).text or "NA"
-        date = review.find('div', {"data-qa": "review-date"}).text or "NA"
+        content = review.find('div', {"data-qa": "review-text"}).text.strip() or "NA"
+        date = review.find('div', {"data-qa": "review-date"}).text.strip() or "NA"
 
-        print(critic, rating, source, content, date, type(rating))
+        # print(critic, rating, source, content, date, type(rating))
+
         critics.append(critic)
         ratings.append(rating)
         sources.append(source)
@@ -81,3 +82,15 @@ with pd.option_context('display.max_rows', None,
                        'display.precision', 3,
                        ):
     print(df)
+
+print("Writing to file")
+df.to_csv(f'./reviews/leonard_mazzone_{movie}.txt', header=None, index=None, sep="\t", mode='a')
+print("Done writing")
+
+with open(f'./reviews/leonard_mazzone_{movie}.txt', mode='r', encoding="utf-8") as f:
+    read_reviews = f.read().split("\n")
+
+print("Printing readout of files", read_reviews)
+
+for review in read_reviews:
+    print(review)
