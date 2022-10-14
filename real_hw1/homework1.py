@@ -1,6 +1,6 @@
 # Question 1
-#   Politifact purports to fact-check journalism by rating specific statements by politicians for accuracy.
-#   They are a non-profit owned by the Poynter Institute for Media Studies.
+# Politifact purports to fact-check journalists and politicians by rating specific statements by
+# politicians for accuracy. They are a non-profit owned by the Poynter Institute for Media Studies.
 
 # Question 2
 with open("politifact_data.txt", mode="r", encoding="utf-8") as f:
