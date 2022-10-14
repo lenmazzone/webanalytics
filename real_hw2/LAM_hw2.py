@@ -1,22 +1,83 @@
 import time
+
 import pandas as pd
 from bs4 import BeautifulSoup
-# pip install selenium if you need to install it -- you also need to download some drivers!
 from selenium import webdriver
-# Service is an object that manages the starting and stopping of the ChromeDriver
+from selenium.common import NoSuchElementException
 from selenium.webdriver.chrome.service import Service
-from selenium.common.exceptions import NoSuchElementException
-# The By class is used to locate elements within a document
 from selenium.webdriver.common.by import By
 
-path = "../utils/chromedriver"
+
+def check_exists_by_xpath(xpath):
+    try:
+        browser.find_element(By.XPATH, xpath)
+    except NoSuchElementException:
+        return False
+    return True
+
+
+path = "../utils/chromedriver_linux"
 s = Service(path)
 browser = webdriver.Chrome(service=s)
 
-movie = "gangs_of_new_york"
-pageNum = 3
+default_movie = 'gangs_of_new_york'
+default_pageNum = 1
 
+movie = input(f'Enter a movie title (defaults to {default_movie}):').lower().replace(' ', '_') or default_movie
+pageNum = int(
+    input(f'How many pages of reviews do you want to collect? (defaults to {default_pageNum})') or default_pageNum)
 
 link = f"https://www.rottentomatoes.com/m/{movie}/reviews"
 browser.get(link)
 time.sleep(4)
+
+critics = []
+ratings = []
+sources = []
+contents = []
+dates = []
+
+for i in range(pageNum):
+    page_source = browser.page_source
+    soup = BeautifulSoup(page_source, 'lxml')
+    reviews_content = soup.find_all('div', class_='row review_table_row')
+    # print(f" reviews content: {reviews_content}")
+
+    for review in reviews_content:
+        critic = review.find('a', {"data-qa": "review-critic-link"}).text or "NA"
+        rating = review.find("div", class_='review_icon')['class'].pop() or "NA"
+        source = review.find('em', {"data-qa": "review-critic-publication"}).text or "NA"
+        content = review.find('div', {"data-qa": "review-text"}).text or "NA"
+        date = review.find('div', {"data-qa": "review-date"}).text or "NA"
+
+        print(critic, rating, source, content, date, type(rating))
+        critics.append(critic)
+        ratings.append(rating)
+        sources.append(source)
+        contents.append(content)
+        dates.append(date)
+
+    if check_exists_by_xpath('//*[@id="content"]/div/div/div/nav[1]/button[2]'):
+        browser.find_element(By.CSS_SELECTOR,
+                             '#content > div > div > div > nav:nth-child(1) > button.js-prev-next-paging-next.btn.prev-next-paging__button.prev-next-paging__button-right').click()
+        print("going to a new page")
+        time.sleep(1)
+    else:
+        break
+browser.quit()
+
+data = {
+    'critics': critics,
+    'ratings': ratings,
+    'sources': sources,
+    'contents': contents,
+    'dates': dates
+}
+df = pd.DataFrame(data)
+print(df.shape, "\n", df.head())
+
+with pd.option_context('display.max_rows', None,
+                       'display.max_columns', None,
+                       'display.precision', 3,
+                       ):
+    print(df)
