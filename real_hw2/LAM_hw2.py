@@ -23,11 +23,12 @@ browser = webdriver.Chrome(service=s)
 default_movie = 'gangs_of_new_york'
 default_pageNum = 3
 
-# NB, this will not work if there are multiple movies with the same title
+
 movie = input(f'Enter a movie title (defaults to {default_movie}):').lower().replace(' ', '_') or default_movie
 pageNum = int(
     input(f'How many pages of reviews do you want to collect? (defaults to {default_pageNum})') or default_pageNum)
 
+# NB, this will not work if there are multiple movies with the same title
 link = f"https://www.rottentomatoes.com/m/{movie}/reviews"
 browser.get(link)
 time.sleep(4)
