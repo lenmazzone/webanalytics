@@ -103,7 +103,7 @@ data = {
 }
 
 df = pd.DataFrame(data, columns=['reviews', 'ratings', 'authors', 'dates'])
-# print(df.shape,"\n", df.head())
+print(df.shape,"\n", df.head(), "\n")
 
 df.sort_values(by=['ratings', 'dates'], inplace=True, ascending=False)
 
