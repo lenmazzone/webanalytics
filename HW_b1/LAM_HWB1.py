@@ -2,8 +2,8 @@ import pandas as pd
 import seaborn as sns
 import tweepy
 from matplotlib import pyplot as plt
-from wordcloud import WordCloud
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+from wordcloud import WordCloud
 
 consumer_key = "vVFYFJW5rMsSMZMvGcgFyq04O"
 consumer_secret = "tthwgvgQFZSnqDIjLZNSomkthmwAK7ePjQZVfRGo59QKIRZqoZ"
@@ -17,7 +17,7 @@ auth.set_access_token(access_key, access_secret)
 
 # create the API object
 api = tweepy.API(auth, wait_on_rate_limit=True)
-client = tweepy.Client(bearer_token)
+client = tweepy.Client(bearer_token, wait_on_rate_limit=True)
 user_id = 981294161780510720
 
 
@@ -31,7 +31,9 @@ def sentiment_analyzer_scores(text):
 # Get tweets from screen name
 def get_tweets_from_screen_name(name: str, results_per_page: int, total_results: int):
     twitter_id = api.get_user(screen_name=name).id_str
-    tweets = tweepy.Paginator(client.get_users_tweets, twitter_id, max_results=results_per_page).flatten(total_results)
+    tweets = tweepy.Paginator(client.get_users_tweets, twitter_id, tweet_fields=['id', 'text', 'public_metrics'],
+                              max_results=results_per_page
+                              ).flatten(total_results)
     return tweets
 
 
@@ -57,13 +59,14 @@ def make_tweet_list(tweets_object):
             'id': t.id,
             'text': t.text,
             'score': tweet_score,
-            'score_str': str_score
+            'score_str': str_score,
+            'like_count': t.public_metrics['like_count']
         })
 
         if 'https://t.co' not in t.text:
             compiled_tweet_text += t.text
 
-    #print(user_tweet_list, compiled_tweet_text)
+    # print(user_tweet_list, compiled_tweet_text)
     return {"user_tweet_list": user_tweet_list, "compiled_tweet_text": compiled_tweet_text}
 
 
@@ -129,7 +132,6 @@ print(followers_list_df)
 elons_tweets = get_tweets_from_screen_name('elonmusk', 100, 400)
 elons_tweets_list, elons_tweets_compiled = make_tweet_list(elons_tweets).values()
 
-
 elon_wordcloud = WordCloud(max_words=20).generate_from_text(elons_tweets_compiled)
 plt.imshow(elon_wordcloud, interpolation='bilinear')
 plt.axis("off")
@@ -149,14 +151,9 @@ plt.show()
 # Question 5
 tcs_tweets = get_tweets_from_screen_name('tim_cook', 100, 200)
 tcs_tweet_list = make_tweet_list(tcs_tweets)['user_tweet_list']
-print(tcs_tweet_list)
+# print(tcs_tweet_list[1]['like_count'])
 
-for tweet in tcs_tweet_list:
-    t_id = tweet['id']
-    print(t_id, tweet['id'], type(tweet['id']))
-    liking_users = tweepy.Paginator(client.get_liking_users, t_id, max_results=100).flatten(400)
-    count = 0
-    for user in liking_users:
-        count += 1
-
-    print(count)
+tcs_tweets_df = pd.DataFrame(tcs_tweet_list)
+# print(tcs_tweets_df, tcs_tweets_df['like_count'])
+sns.displot(x=tcs_tweets_df['like_count'], kde=True).set(title='Tim Cook Tweet Like Distribution')
+plt.show()
