@@ -35,13 +35,9 @@ def get_tweets_from_screen_name(name: str, results_per_page: int, total_results:
     return tweets
 
 
+# Function for taking tweepy objects and making tweet lists 
 def make_tweet_list(tweets_object):
-    user_tweet_list = []
-    compiled_tweet_text = ""
-    for tweet in tweets_object:
-        score = sentiment_analyzer_scores(tweet.text)
-        score_str = ''
-
+    def convert_score(score):
         if score > 0:
             score_str = 'positive'
         elif score < 0:
@@ -49,16 +45,25 @@ def make_tweet_list(tweets_object):
         else:
             score_str = 'neutral'
 
+        return score_str
+
+    user_tweet_list = []
+    compiled_tweet_text = ""
+    for t in tweets_object:
+        tweet_score = sentiment_analyzer_scores(t.text)
+        str_score = convert_score(tweet_score)
+
         user_tweet_list.append({
-            'id': tweet.id,
-            'text': tweet.text,
-            'score': score,
-            'score_str': score_str
+            'id': t.id,
+            'text': t.text,
+            'score': tweet_score,
+            'score_str': str_score
         })
 
-        if 'https://t.co' not in tweet.text:
-            compiled_tweet_text += tweet.text
+        if 'https://t.co' not in t.text:
+            compiled_tweet_text += t.text
 
+    #print(user_tweet_list, compiled_tweet_text)
     return {"user_tweet_list": user_tweet_list, "compiled_tweet_text": compiled_tweet_text}
 
 
@@ -122,39 +127,17 @@ print(followers_list_df)
 
 # Question 4
 elons_tweets = get_tweets_from_screen_name('elonmusk', 100, 400)
-elons_tweets_compiled = ""
-elons_tweets_list = []
+elons_tweets_list, elons_tweets_compiled = make_tweet_list(elons_tweets).values()
 
-for tweet in elons_tweets:
-    score = sentiment_analyzer_scores(tweet.text)
-    score_str = ''
-
-    if score > 0:
-        score_str = 'positive'
-    elif score < 0:
-        score_str = 'negative'
-    else:
-        score_str = 'neutral'
-
-    elons_tweets_list.append({
-        'id': tweet.id,
-        'text': tweet.text,
-        'score': score,
-        'score_str': score_str
-    })
-
-    if 'https://t.co' not in tweet.text:
-        elons_tweets_compiled += tweet.text
-
-# print(elons_tweets_compiled)
 
 elon_wordcloud = WordCloud(max_words=20).generate_from_text(elons_tweets_compiled)
 plt.imshow(elon_wordcloud, interpolation='bilinear')
 plt.axis("off")
 plt.show()
 
-# print(elons_tweets_list[0],elons_tweets_list[0].get('score_str'))
+# print(elons_tweets_list[0], elons_tweets_list[0].get('score_str'))
 elons_tweets_df = pd.DataFrame(elons_tweets_list)
+# print(elons_tweets_df.head())
 # print(elons_tweets_df['score_str'])
 
 plt.figure(figsize=(10, 8))
@@ -165,8 +148,15 @@ plt.show()
 
 # Question 5
 tcs_tweets = get_tweets_from_screen_name('tim_cook', 100, 200)
+tcs_tweet_list = make_tweet_list(tcs_tweets)['user_tweet_list']
+print(tcs_tweet_list)
 
-# for tweet in tcs_tweets:
-#     print(tweet.id)
-#     liking_users = tweepy.Client.get_liking_users(tweet.id)
-#     print(liking_users)
+for tweet in tcs_tweet_list:
+    t_id = tweet['id']
+    print(t_id, tweet['id'], type(tweet['id']))
+    liking_users = tweepy.Paginator(client.get_liking_users, t_id, max_results=100).flatten(400)
+    count = 0
+    for user in liking_users:
+        count += 1
+
+    print(count)
